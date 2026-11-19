@@ -1,69 +1,80 @@
-import Image from "next/image";
+"use client";
+
+import { useCallback, useState } from "react";
+import { motion } from "framer-motion";
+import { PrizeWheel } from "@/components/prize-wheel";
+import { SpinButton } from "@/components/spin-button";
+import { BRAND, PRIZES, pickWeightedIndex, type Prize } from "@/config/prizes";
 
 export default function Home() {
+  const [mustSpin, setMustSpin] = useState(false);
+  const [prizeNumber, setPrizeNumber] = useState(0);
+  // Will drive the confetti + winning modal in the next step.
+  const [winner, setWinner] = useState<Prize | null>(null);
+
+  const handleSpin = useCallback(() => {
+    if (mustSpin) return;
+    setWinner(null);
+    setPrizeNumber(pickWeightedIndex(PRIZES));
+    setMustSpin(true);
+  }, [mustSpin]);
+
+  const handleStop = useCallback(() => {
+    setMustSpin(false);
+    setWinner(PRIZES[prizeNumber]);
+  }, [prizeNumber]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="relative grid h-dvh w-dvw grid-rows-[auto_1fr] overflow-hidden landscape:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] landscape:grid-rows-1">
+      {/* Background glows */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-[15%] -top-[20%] size-[60vmax] rounded-full bg-[#6D5BFF]/25 blur-[120px]" />
+        <div className="absolute -bottom-[25%] -right-[10%] size-[55vmax] rounded-full bg-[#3DD6C6]/15 blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
+      </div>
+
+      {/* Branding panel */}
+      <motion.section
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col justify-center gap-5 px-8 pt-10 text-center landscape:px-[6vw] landscape:pt-0 landscape:text-left"
+      >
+        <span className="mx-auto inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-[0.35em] text-white/70 backdrop-blur-md landscape:mx-0">
+          <span className="size-1.5 rounded-full bg-[#F2C35E] shadow-[0_0_10px_#F2C35E]" />
+          {BRAND.eyebrow}
+        </span>
+        <h1 className="bg-gradient-to-b from-white to-white/60 bg-clip-text text-[clamp(2.75rem,7vmin,6rem)] font-bold leading-[1.05] tracking-tight text-transparent">
+          {BRAND.title}
+        </h1>
+        <p className="text-[clamp(1rem,2.2vmin,1.35rem)] text-white/65">{BRAND.subtitle}</p>
+
+        <div className="hidden pt-6 landscape:block">
+          <SpinButton onClick={handleSpin} disabled={mustSpin} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <p className="hidden pt-4 text-sm text-white/40 landscape:block">{BRAND.footnote}</p>
+      </motion.section>
+
+      {/* Wheel */}
+      <section className="flex min-h-0 flex-col items-center justify-center gap-[4vmin] px-6 pb-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, rotate: -8 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 90, damping: 16, delay: 0.15 }}
+        >
+          <PrizeWheel mustSpin={mustSpin} prizeNumber={prizeNumber} onStopSpinning={handleStop} />
+        </motion.div>
+
+        <div className="landscape:hidden">
+          <SpinButton onClick={handleSpin} disabled={mustSpin} />
         </div>
-      </main>
-    </div>
+
+        {/* Temporary result readout — replaced by the modal in the next step */}
+        <p aria-live="polite" className="h-6 text-sm tracking-wide text-white/60">
+          {winner ? `結果：${winner.label}` : ""}
+        </p>
+      </section>
+    </main>
   );
 }
